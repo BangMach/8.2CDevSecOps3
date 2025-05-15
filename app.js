@@ -41,8 +41,9 @@ app.use(logger('dev'));
 app.use(methodOverride());
 app.use(session({
   secret: 'keyboard cat',
-  name: 'connect.sid',
-  cookie: { path: '/' }
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false }
 }))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

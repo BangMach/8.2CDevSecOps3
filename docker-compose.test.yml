@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    environment:
+      - NODE_ENV=test
+      - MONGODB_URI=mongodb://mongodb:27017/express-todo-test
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+    command: npm run test:ci
+    networks:
+      - test-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge 

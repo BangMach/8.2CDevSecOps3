@@ -1,5 +1,27 @@
 const request = require('supertest');
-const app = require('../app');
+const mongoose = require('mongoose');
+let app;
+let server;
+
+// Setup before tests
+beforeAll(async () => {
+    // Set test environment
+    process.env.NODE_ENV = 'test';
+    process.env.PORT = 3001;
+    process.env.MONGODB_URI = 'mongodb://localhost:27017/express-todo-test';
+    
+    // Import app after setting environment variables
+    app = require('../app');
+    
+    // Create server
+    server = app.listen(process.env.PORT);
+});
+
+// Cleanup after tests
+afterAll(async () => {
+    await mongoose.connection.close();
+    await server.close();
+});
 
 describe('Todo Application', () => {
     describe('GET /', () => {
