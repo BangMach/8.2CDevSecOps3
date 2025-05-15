@@ -47,7 +47,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        // Start MongoDB container hello world
+                        // Start MongoDB container hello world s
                         sh '''
                             docker network create test-network || true
                             docker run -d --name mongodb --network test-network -p 27017:27017 mongo:latest
