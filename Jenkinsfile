@@ -17,6 +17,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+                
                 sh 'npm install --save-dev jest supertest @types/jest jest-junit eslint'
             }
         }
