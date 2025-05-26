@@ -45,35 +45,11 @@ pipeline {
             }
         }
         stage('Run Tests') {
-            steps {
-                script {
-                    try {
-                        // Start MongoDB container hello world s
-                        sh '''
-                            # Clean up old MongoDB container if it exists
-                            docker rm -f mongodb || true
-
-                            # Delete all old test-network duplicates
-                            docker network prune -f || true
-
-                            # Create a fresh network
-                            docker network create test-network || true
-
-                            # Start fresh MongoDB
-                            docker run -d --name mongodb --network test-network -p 27017:27017 mongo:latest
-                        '''
-                    } catch (err) {
-                        // Mark build as unstable but don't failsss
-                        unstable('Tests failed')
-                    } finally {
-                        // Cleanup
-                        sh '''
-                            docker stop mongodb || true
-                            docker rm mongodb || true
-                            docker network rm test-network || true
-                        '''
-                    }
-                }
+             steps {
+                sh '''
+                    # Run tests and generate coverage report
+                    npm test -- --coverage --reporters=default --reporters=jest-junit
+                '''
             }
             post {
                 always {
