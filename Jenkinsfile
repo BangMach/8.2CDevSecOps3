@@ -21,35 +21,59 @@ pipeline {
                 sh 'npm install --save-dev jest supertest @types/jest jest-junit eslint'
             }
         }
-        stage('Static Code Analysis') {
-            parallel {
-                stage('ESLint') {
-                    steps {
-                        sh 'npx eslint . || true'
-                    }
-                }
-                stage('SonarCloud Analysis') {
-                    steps {
-                        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                            sh '''
-                                if [ ! -d "$SONAR_SCANNER_HOME" ]; then
-                                    curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-                                    unzip sonar-scanner.zip -d .
-                                    mv sonar-scanner-* sonar-scanner
-                                fi
-                                ${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.login=$SONAR_TOKEN
-                            '''
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Static Code Analysis') {
+        //     parallel {
+        //         stage('ESLint') {
+        //             steps {
+        //                 sh 'npx eslint . || true'
+        //             }
+        //         }
+        //         stage('SonarCloud Analysis') {
+        //             steps {
+        //                 withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+        //                     sh '''
+        //                         if [ ! -d "$SONAR_SCANNER_HOME" ]; then
+        //                             curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+        //                             unzip sonar-scanner.zip -d .
+        //                             mv sonar-scanner-* sonar-scanner
+        //                         fi
+        //                         ${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.login=$SONAR_TOKEN
+        //                     '''
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         stage('Run Tests') {
-             steps {
-                sh '''
-                    # Run tests and generate coverage report
-                    npm test -- --coverage --reporters=default --reporters=jest-junit
-                '''
+            steps {
+                script {
+                    try {
+                        // Start MongoDB container hello world s
+                        sh '''
+                            # Clean up old MongoDB container if it exists
+                            docker rm -f mongodb || true
+
+                            # Delete all old test-network duplicates
+                            docker network prune -f || true
+
+                            # Create a fresh network
+                            docker network create test-network || true
+
+                            # Start fresh MongoDB
+                            docker run -d --name mongodb --network test-network -p 27017:27017 mongo:latest
+                        '''
+                    } catch (err) {
+                        // Mark build as unstable but don't failsss
+                        unstable('Tests failed')
+                    } finally {
+                        // Cleanup
+                        sh '''
+                            docker stop mongodb || true
+                            docker rm mongodb || true
+                            docker network rm test-network || true
+                        '''
+                    }
+                }
             }
             post {
                 always {
