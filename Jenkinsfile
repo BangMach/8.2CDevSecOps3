@@ -150,7 +150,7 @@ stages {
 }
 post {
     always {
-        // Clean up workspace
+        // Clean up workspaces
         cleanWs()
     }
 }
