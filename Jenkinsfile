@@ -126,6 +126,31 @@ pipeline {
                 }
             }
         }
+        stage('Release') {
+            steps {
+                script {
+                    sh "git tag v1.0.${BUILD_NUMBER}"
+                    sh "git push origin v1.0.${BUILD_NUMBER}"
+                }
+        }
+        stage('Monitoring') {
+            steps {
+                script {
+                    def status = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health', returnStdout: true).trim()
+                    if (status != "200") {
+                        error "Health check failed"
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker run -d --rm --name my-node-test -p 3000:3000 my-node-app:${BUILD_NUMBER}
+                '''
+            }
+        }
+}
     }
     post {
         always {
