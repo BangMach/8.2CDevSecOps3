@@ -59,7 +59,7 @@ pipeline {
                             MONGODB_URI=${MONGODB_URI} npm run test:ci
                         '''
                     } catch (err) {
-                        // Mark build as unstable but don't fail
+                        // Mark build as unstable but don't failsss
                         unstable('Tests failed')
                     } finally {
                         // Cleanup
