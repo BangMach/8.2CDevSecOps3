@@ -110,39 +110,39 @@ pipeline {
                 }
             }
         }
-        // stage('Build Docker Image') {
-        //     steps {
-        //         script {
-        //             echo "Building Docker image: ${DOCKER_IMAGE}"
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker image: ${DOCKER_IMAGE}"
 
-        //             // Build the image
-        //             sh "docker build -t ${DOCKER_IMAGE} ."
+                    // Build the image
+                    sh "docker build -t ${DOCKER_IMAGE} ."
 
-        //             // Save as artifact (tarball)
-        //             sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
+                    // Save as artifact (tarball)
+                    sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
 
-        //             // Archive the Docker image
-        //             archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
-        //         }
-        //     }
-        // }
+                    // Archive the Docker image
+                    archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
+                }
+            }
+        }
         stage('Release') {
             steps {
                 script {
                     echo "Deploying Docker image: ${DOCKER_IMAGE}"
 
-                    // Stop and remove any existing container
-                    sh '''
-                        docker rm -f my-node-app || true
-                    '''
+                    // Unpack archived Docker image
+                    sh "docker load -i ${DOCKER_IMAGE}.tar || true"
 
-                    // Run the new container
-                    sh '''
-                        docker run -d --name my-node-app -p 3000:3000 ${DOCKER_IMAGE}
-                    '''
+                    // Clean up old container if exists
+                    sh "docker rm -f my-node-app || true"
+
+                    // Run the image
+                    sh "docker run -d --name my-node-app -p 3000:3000 ${DOCKER_IMAGE}"
                 }
             }
         }
+
         stage('Monitor') {
             steps {
                 script {
