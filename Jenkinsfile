@@ -77,6 +77,10 @@ pipeline {
             }
             post {
                 always {
+
+                    // Debugging: List coverage directory
+                    sh 'ls -R coverage || true'
+
                     // Publish Jest test results
                     junit 'coverage/junit.xml'
 
