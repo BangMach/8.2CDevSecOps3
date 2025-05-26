@@ -110,22 +110,22 @@ pipeline {
                 }
             }
         }
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image: ${DOCKER_IMAGE}"
+        // stage('Build Docker Image') {
+        //     steps {
+        //         script {
+        //             echo "Building Docker image: ${DOCKER_IMAGE}"
 
-                    // Build the image
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+        //             // Build the image
+        //             sh "docker build -t ${DOCKER_IMAGE} ."
 
-                    // Save as artifact (tarball)
-                    sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
+        //             // Save as artifact (tarball)
+        //             sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
 
-                    // Archive the Docker image
-                    archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
-                }
-            }
-        }
+        //             // Archive the Docker image
+        //             archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
+        //         }
+        //     }
+        // }
         stage('Release') {
             steps {
                 script {
@@ -139,6 +139,18 @@ pipeline {
                     // Run the new container
                     sh '''
                         docker run -d --name my-node-app -p 3000:3000 ${DOCKER_IMAGE}
+                    '''
+                }
+            }
+        }
+        stage('Monitor') {
+            steps {
+                script {
+                    echo "Monitoring the application..."
+
+                    // Check if the application is running
+                    sh '''
+                        curl -s http://localhost:3000 || echo "Application is not running"
                     '''
                 }
             }
