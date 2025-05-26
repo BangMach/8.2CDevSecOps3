@@ -110,22 +110,22 @@ pipeline {
                 }
             }
         }
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image: ${DOCKER_IMAGE}"
+        // stage('Build Docker Image') {
+        //     steps {
+        //         script {
+        //             echo "Building Docker image: ${DOCKER_IMAGE}"
 
-                    // Build the image
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+        //             // Build the image
+        //             sh "docker build -t ${DOCKER_IMAGE} ."
 
-                    // Save as artifact (tarball)
-                    sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
+        //             // Save as artifact (tarball)
+        //             sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
 
-                    // Archive the Docker image
-                    archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
-                }
-            }
-        }
+        //             // Archive the Docker image
+        //             archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
+        //         }
+        //     }
+        // }
         stage('Release') {
             steps {
                 script {
