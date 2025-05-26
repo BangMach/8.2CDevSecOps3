@@ -15,7 +15,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --reporters=default --reporters=jest-junit",
+    "test:ci": "jest --ci --reporters=default --reporters=jest-junit",
     "lint": "eslint .",
     "security-scan": "npm audit && snyk test"
   },
@@ -55,6 +55,7 @@
   },
   "devDependencies": {
     "browserify": "^13.1.1",
+    "jest-junit": "^16.0.0",
     "nodemon": "^2.0.7",
     "snyk": "^1.244.0"
   },

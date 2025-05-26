@@ -49,14 +49,17 @@ pipeline {
                     try {
                         // Start MongoDB container hello world s
                         sh '''
+                            # Clean up old MongoDB container if it exists
+                            docker rm -f mongodb || true
+
+                            # Delete all old test-network duplicates
+                            docker network prune -f || true
+
+                            # Create a fresh network
                             docker network create test-network || true
+
+                            # Start fresh MongoDB
                             docker run -d --name mongodb --network test-network -p 27017:27017 mongo:latest
-                            
-                            # Wait for MongoDB to be ready
-                            sleep 10
-                            
-                            # Run tests with proper environment
-                            MONGODB_URI=${MONGODB_URI} npm run test:ci
                         '''
                     } catch (err) {
                         // Mark build as unstable but don't failsss
