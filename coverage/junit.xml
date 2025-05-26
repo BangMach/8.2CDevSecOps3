@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="jest tests" tests="0" failures="0" errors="0" time="0.363">
+    <testsuite name="Mock Test Suite" tests="1" failures="0" errors="0" skipped="0">
+        <testcase classname="MockClass" name="mockTest" time="0.001" />
+    </testsuite>
 </testsuites>
