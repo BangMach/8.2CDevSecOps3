@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/BangMach/8.2CDevSecOps3.git'
+                git branch: 'main2', url: 'https://github.com/BangMach/8.2CDevSecOps3.git'
             }
         }
         stage('Install Dependencies') {
