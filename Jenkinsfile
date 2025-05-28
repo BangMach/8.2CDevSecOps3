@@ -18,7 +18,6 @@ pipeline {
             steps {
                 sh 'npm install'
                 
-                sh 'npm install --save-dev jest supertest @types/jest jest-junit eslint'
             }
         }
         // stage('Static Code Analysis') {
@@ -145,13 +144,13 @@ pipeline {
                 zip -r deploy.zip Dockerrun.aws.json
 
                 # Upload to S3
-                aws s3 cp deploy.zip s3://my-app-deployments/deploy-${BUILD_NUMBER}.zip
+                aws s3 cp deploy.zip s3://elasticbeanstalk-ap-southeast-2-053702455260/deploy-${BUILD_NUMBER}.zip
 
                 # Register application version
                 aws elasticbeanstalk create-application-version \
                 --application-name my-app \
                 --version-label v${BUILD_NUMBER} \
-                --source-bundle S3Bucket=my-app-deployments,S3Key=deploy-${BUILD_NUMBER}.zip
+                --source-bundle S3Bucket=elasticbeanstalk-ap-southeast-2-053702455260,S3Key=deploy-${BUILD_NUMBER}.zip
 
                 # Update environment
                 aws elasticbeanstalk update-environment \

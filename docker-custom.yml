@@ -1,0 +1,18 @@
+FROM jenkins/jenkins:lts
+
+# Switch to root user to install dependencies
+USER root
+
+# Install required tools
+RUN apt-get update && apt-get install -y \
+    zip \
+    unzip \
+    curl \
+    awscli \
+    nodejs \
+    npm \
+    git \
+    && apt-get clean
+
+# Switch back to Jenkins user
+USER jenkins
