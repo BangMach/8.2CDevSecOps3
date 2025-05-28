@@ -9,6 +9,12 @@ pipeline {
     }
 
     stages {
+        stage('Verify Compose') {
+            steps {
+                sh 'docker-compose --version || docker compose version'
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/BangMach/8.2CDevSecOps3.git'
