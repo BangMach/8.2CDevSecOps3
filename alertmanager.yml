@@ -1,0 +1,11 @@
+route:
+  receiver: 'email-team'
+receivers:
+  - name: 'email-team'
+    email_configs:
+      - to: 'you@example.com'
+        from: 'alert@yourdomain.com'
+        smarthost: 'smtp.yourprovider.com:587'
+        auth_username: 'alert@yourdomain.com'
+        auth_identity: 'alert@yourdomain.com'
+        auth_password: 'your-smtp-password'

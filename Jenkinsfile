@@ -158,20 +158,16 @@ pipeline {
                 }
             }
         }
-
-        stage('Monitor') {
-            steps {
-                script {
-                    echo "Monitoring the application..."
-
-                    // Check if the application is running
-                    sh '''
-                        curl -s http://localhost:3000 || echo "Application is not running"
-                    '''
-                }
-            }
+        stage('Monitoring & Alerting') {
+        steps {
+            sh '''
+            docker-compose -f docker-compose.monitor.yml up -d
+            # Give Prometheus time to start scraping
+            sleep 30
+            '''
+            echo "Prometheus UI: http://localhost:9090  | Alertmanager UI: http://localhost:9093"
         }
-        
+        }
     }
     post {
         always {
