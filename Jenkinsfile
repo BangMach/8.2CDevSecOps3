@@ -144,6 +144,11 @@ pipeline {
         stage('Release to Production') {
             steps {
                 script {
+                // config git user identity
+                sh '''
+                    git config --global user.name "Bang Dieu Mach"
+                    git config --global user.email "machdieubang2110@gmail.com"
+                '''
                 // Tag the build in Git
                 sh "git tag -a v1.0.${BUILD_NUMBER} -m 'Release ${BUILD_NUMBER}'"
                 sh "git push origin v1.0.${BUILD_NUMBER}"
@@ -153,7 +158,7 @@ pipeline {
                     gh release create v1.0.${BUILD_NUMBER} \
                     --title "Release ${BUILD_NUMBER}" \
                     --notes "Automated release from Jenkins" \
-                    --repo your-org/your-repo
+                    --repo BangMach/8.2CDevSecOps3 
                 '''
                 }
             }
