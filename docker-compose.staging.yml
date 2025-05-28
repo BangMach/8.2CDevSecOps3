@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  app:
+    image: mydockerhub/my-node-app:${BUILD_NUMBER}
+    ports:
+      - "4000:3000"
+    environment:
+      - NODE_ENV=staging
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+networks:
+  default:
+    name: test-network

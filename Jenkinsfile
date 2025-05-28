@@ -126,6 +126,17 @@ pipeline {
                 }
             }
         }
+        stage('Deploy to Staging') {
+            steps {
+                sh '''
+                docker-compose -f docker-compose.staging.yml pull
+                docker-compose -f docker-compose.staging.yml up -d --remove-orphans
+                sleep 10
+                '''
+                // Health check
+                sh 'curl -f http://localhost:4000/health'
+            }
+        }
         stage('Release') {
             steps {
                 script {
