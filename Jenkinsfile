@@ -158,7 +158,7 @@ pipeline {
                     gh release create v1.0.${BUILD_NUMBER} \
                     --title "Release ${BUILD_NUMBER}" \
                     --notes "Automated release from Jenkins" \
-                    --repo BangMach/8.2CDevSecOps3 
+                    --repo SIT753-ITProfessional/Jenkins-Project-7.3-HD
                 '''
                 }
             }
