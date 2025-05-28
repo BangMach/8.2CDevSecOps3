@@ -144,13 +144,13 @@ pipeline {
                 zip -r deploy.zip Dockerrun.aws.json
 
                 # Upload to S3
-                aws s3 cp deploy.zip s3://elasticbeanstalk-ap-southeast-2-053702455260/deploy-${BUILD_NUMBER}.zip
+                aws s3 cp deploy.zip s3://my-app-deployments-hd/deploy-${BUILD_NUMBER}.zip
 
                 # Register application version
                 aws elasticbeanstalk create-application-version \
                 --application-name my-app \
                 --version-label v${BUILD_NUMBER} \
-                --source-bundle S3Bucket=elasticbeanstalk-ap-southeast-2-053702455260,S3Key=deploy-${BUILD_NUMBER}.zip
+                --source-bundle S3Bucket=my-app-deployments-hd,S3Key=deploy-${BUILD_NUMBER}.zip
 
                 # Update environment
                 aws elasticbeanstalk update-environment \
@@ -178,7 +178,7 @@ pipeline {
                     gh release create v1.0.${BUILD_NUMBER} \
                     --title "Release ${BUILD_NUMBER}" \
                     --notes "Automated release from Jenkins" \
-                    --repo du/Jenkins-Project-7.3-HD
+                    --repo BangMach/8.2CDevSecOps3
                 '''
                 }
             }
