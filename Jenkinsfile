@@ -127,15 +127,19 @@ pipeline {
             }
         }
         stage('Deploy to Staging') {
-            steps {
-                sh '''
-                docker-compose -f docker-compose.staging.yml pull
-                docker-compose -f docker-compose.staging.yml up -d --remove-orphans
-                sleep 10
-                '''
-                // Health check
-                sh 'curl -f http://localhost:4000/health'
-            }
+        steps {
+            sh '''
+            docker run --rm \
+                -v /var/run/docker.sock:/var/run/docker.sock \
+                -v $PWD:$PWD \
+                -w $PWD \
+                docker/compose:1.29.2 \
+                -f docker-compose.staging.yml up -d --remove-orphans
+
+            sleep 10
+            curl -f http://localhost:4000/health
+            '''
+        }
         }
         stage('Release to Production') {
             steps {
