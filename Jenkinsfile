@@ -137,19 +137,20 @@ pipeline {
                 sh 'curl -f http://localhost:4000/health'
             }
         }
-        stage('Release') {
+        stage('Release to Production') {
             steps {
                 script {
-                    echo "Deploying Docker image: ${DOCKER_IMAGE}"
+                // Tag the build in Git
+                sh "git tag -a v1.0.${BUILD_NUMBER} -m 'Release ${BUILD_NUMBER}'"
+                sh "git push origin v1.0.${BUILD_NUMBER}"
 
-                    // Unpack archived Docker image
-                    sh "docker load -i ${DOCKER_IMAGE}.tar || true"
-
-                    // Clean up old container if exists
-                    sh "docker rm -f my-node-app || true"
-
-                    // Run the image
-                    sh "docker run -d --name my-node-app -p 3000:3000 ${DOCKER_IMAGE}"
+                // Create GitHub Release via GH CLI
+                sh '''
+                    gh release create v1.0.${BUILD_NUMBER} \
+                    --title "Release ${BUILD_NUMBER}" \
+                    --notes "Automated release from Jenkins" \
+                    --repo your-org/your-repo
+                '''
                 }
             }
         }
