@@ -111,6 +111,13 @@ pipeline {
             }
         }
         stage('Build Docker Image') {
+            when {
+                expression {
+                    // Check if Docker-related files have changed
+                    def changes = sh(script: "git diff --name-only HEAD~1 | grep -E 'Dockerfile|package.json|src/' || true", returnStdout: true).trim()
+                    return changes != ""
+                }
+            }
             steps {
                 script {
                     echo "Building Docker image: ${DOCKER_IMAGE}"
@@ -126,21 +133,35 @@ pipeline {
                 }
             }
         }
-        // stage('Deploy to Staging') {
-        // steps {
-        //     sh '''
-        //     docker run --rm \
-        //         -v /var/run/docker.sock:/var/run/docker.sock \
-        //         -v $PWD:$PWD \
-        //         -w $PWD \
-        //         docker/compose:1.29.2 \
-        //         -f docker-compose.staging.yml up -d --remove-orphans
+        stage('Deploy to Staging (Elastic Beanstalk)') {
+        steps {
+            withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+            sh '''
+                export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                export AWS_DEFAULT_REGION=ap-southeast-2
 
-        //     sleep 10
-        //     curl -f http://localhost:4000/health
-        //     '''
-        // }
-        // }
+                # Zip Docker EB config
+                zip -r deploy.zip Dockerrun.aws.json
+
+                # Upload to S3
+                aws s3 cp deploy.zip s3://my-app-deployments/deploy-${BUILD_NUMBER}.zip
+
+                # Register application version
+                aws elasticbeanstalk create-application-version \
+                --application-name my-app \
+                --version-label v${BUILD_NUMBER} \
+                --source-bundle S3Bucket=my-app-deployments,S3Key=deploy-${BUILD_NUMBER}.zip
+
+                # Update environment
+                aws elasticbeanstalk update-environment \
+                --environment-name my-app-staging \
+                --version-label v${BUILD_NUMBER}
+            '''
+            }
+        }
+        }
+
         stage('Release to Production') {
             steps {
                 script {
@@ -158,7 +179,7 @@ pipeline {
                     gh release create v1.0.${BUILD_NUMBER} \
                     --title "Release ${BUILD_NUMBER}" \
                     --notes "Automated release from Jenkins" \
-                    --repo SIT753-ITProfessional/Jenkins-Project-7.3-HD
+                    --repo BangMach/Jenkins-Project-7.3-HD
                 '''
                 }
             }
