@@ -29,7 +29,8 @@ pipeline {
             parallel {
                 stage('ESLint') {
                     steps {
-                        sh 'npx eslint . || true'
+                        // Prevent pipeline failure if ESLint errors
+                        sh 'npx eslint . || true'                  
                     }
                 }
                 stage('SonarCloud Analysis') {
@@ -121,29 +122,29 @@ pipeline {
                 }
             }
         }
-        // stage('Build Docker Image') {
-        //     when {
-        //         expression {
-        //             // Check if Docker-related files have changed
-        //             def changes = sh(script: "git diff --name-only HEAD~1 | grep -E 'Dockerfile|package.json|src/' || true", returnStdout: true).trim()
-        //             return changes != ""
-        //         }
-        //     }
-        //     steps {
-        //         script {
-        //             echo "Building Docker image: ${DOCKER_IMAGE}"
+        stage('Build Docker Image') {
+            when {
+                expression {
+                    // Check if Docker-related files have changed
+                    def changes = sh(script: "git diff --name-only HEAD~1 | grep -E 'Dockerfile|package.json|src/' || true", returnStdout: true).trim()
+                    return changes != ""
+                }
+            }
+            steps {
+                script {
+                    echo "Building Docker image: ${DOCKER_IMAGE}"
 
-        //             // Build the image
-        //             sh "docker build -t ${DOCKER_IMAGE} ."
+                    // Build the image
+                    sh "docker build -t ${DOCKER_IMAGE} ."
 
-        //             // Save as artifact (tarball)
-        //             sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
+                    // Save as artifact (tarball)
+                    sh "docker save ${DOCKER_IMAGE} -o my-node-app-${env.BUILD_NUMBER}.tar"
 
-        //             // Archive the Docker image
-        //             archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
-        //         }
-        //     }
-        // }
+                    // Archive the Docker image
+                    archiveArtifacts artifacts: "my-node-app-${env.BUILD_NUMBER}.tar", fingerprint: true
+                }
+            }
+        }
         stage('Deploy to Staging (Elastic Beanstalk)') {
         steps {
             withCredentials([usernamePassword(credentialsId: 'aws-creds', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
