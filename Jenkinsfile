@@ -187,12 +187,43 @@ pipeline {
         stage('Monitor') {
             steps {
                 script {
-                    echo "Monitoring the application..."
+                    echo "Monitoring the application using AWS CloudWatch..."
 
-                    // Check if the application is running
-                    sh '''
-                        curl -s http://localhost:3000 || echo "Application is not running"
-                    '''
+                    // Query CloudWatch metrics (e.g., CPU utilization)
+                    def cpuUtilization = sh(script: '''
+                        aws cloudwatch get-metric-statistics \
+                            --namespace AWS/EC2 \
+                            --metric-name CPUUtilization \
+                            --dimensions Name=InstanceId,Value=i-086032fbe1cd9bece \
+                            --start-time $(date -u -d '5 minutes ago' +%Y-%m-%dT%H:%M:%SZ) \
+                            --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ) \
+                            --period 300 \
+                            --statistics Average \
+                            --region ap-southeast-2 \
+                            --query "Datapoints[0].Average" \
+                            --output text
+                    ''', returnStdout: true).trim()
+
+                    echo "CPU Utilization: ${cpuUtilization}%"
+
+                    // Fail the pipeline if CPU utilization exceeds a threshold
+                    if (cpuUtilization.toFloat() > 80) {
+                        error "High CPU utilization detected: ${cpuUtilization}%"
+                    }
+
+                    // Query CloudWatch alarms
+                    def alarmState = sh(script: '''
+                        aws cloudwatch describe-alarms \
+                            --region ap-southeast-2 \
+                            --query "MetricAlarms[?StateValue=='ALARM'].AlarmName" \
+                            --output text
+                    ''', returnStdout: true).trim()
+
+                    if (alarmState) {
+                        error "CloudWatch alarms triggered: ${alarmState}"
+                    }
+
+                    echo "No alarms triggered. Application is healthy."
                 }
             }
         }
