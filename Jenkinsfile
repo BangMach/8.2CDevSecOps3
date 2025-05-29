@@ -211,9 +211,14 @@ pipeline {
 
                     echo "CPU Utilization: ${cpuUtilization}%"
 
-                    // Fail the pipeline if CPU utilization exceeds a threshold
-                    if (cpuUtilization.toFloat() > 80) {
-                        error "High CPU utilization detected: ${cpuUtilization}%"
+                    // Validate CPU utilization value
+                    if (cpuUtilization == "None" || !cpuUtilization.isNumber()) {
+                        echo "Warning: CPU utilization value is invalid or unavailable."
+                    } else {
+                        // Fail the pipeline if CPU utilization exceeds a threshold
+                        if (cpuUtilization.toFloat() > 80) {
+                            error "High CPU utilization detected: ${cpuUtilization}%"
+                        }
                     }
 
                     // Query CloudWatch alarms
