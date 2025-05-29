@@ -41,6 +41,13 @@ pipeline {
                                     unzip sonar-scanner.zip -d .
                                     mv sonar-scanner-* sonar-scanner
                                 fi
+
+                                # Validate SonarScanner configuration
+                                if grep -q 'sonar.issue.ignore.allfile=.*,' sonar-project.properties; then
+                                    echo "Warning: Blank entries detected in sonar.issue.ignore.allfile. Please fix the configuration."
+                                    exit 1
+                                fi
+
                                 ${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.login=$SONAR_TOKEN
                             '''
                         }
