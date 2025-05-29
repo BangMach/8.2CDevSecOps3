@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main2', description: 'Branch to build')
+        string(name: 'AWS_REGION', defaultValue: 'ap-southeast-2', description: 'AWS Region')
+    }
+
     environment {
         NODE_ENV = 'test'
         SONAR_SCANNER_HOME = "${WORKSPACE}/sonar-scanner"
@@ -11,7 +16,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main2', url: 'https://github.com/BangMach/8.2CDevSecOps3.git'
+                git branch: "${params.BRANCH_NAME}", url: 'https://github.com/BangMach/8.2CDevSecOps3.git'
             }
         }
         stage('Install Dependencies') {
@@ -20,29 +25,29 @@ pipeline {
                 
             }
         }
-        // stage('Static Code Analysis') {
-        //     parallel {
-        //         stage('ESLint') {
-        //             steps {
-        //                 sh 'npx eslint . || true'
-        //             }
-        //         }
-        //         stage('SonarCloud Analysis') {
-        //             steps {
-        //                 withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-        //                     sh '''
-        //                         if [ ! -d "$SONAR_SCANNER_HOME" ]; then
-        //                             curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-        //                             unzip sonar-scanner.zip -d .
-        //                             mv sonar-scanner-* sonar-scanner
-        //                         fi
-        //                         ${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.login=$SONAR_TOKEN
-        //                     '''
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
+        stage('Static Code Analysis') {
+            parallel {
+                stage('ESLint') {
+                    steps {
+                        sh 'npx eslint . || true'
+                    }
+                }
+                stage('SonarCloud Analysis') {
+                    steps {
+                        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                            sh '''
+                                if [ ! -d "$SONAR_SCANNER_HOME" ]; then
+                                    curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+                                    unzip sonar-scanner.zip -d .
+                                    mv sonar-scanner-* sonar-scanner
+                                fi
+                                ${SONAR_SCANNER_HOME}/bin/sonar-scanner -Dsonar.login=$SONAR_TOKEN
+                            '''
+                        }
+                    }
+                }
+            }
+        }
         stage('Run Tests') {
             steps {
                 script {
